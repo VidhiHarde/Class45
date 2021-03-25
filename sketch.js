@@ -1,6 +1,7 @@
 var bg,bgImg;
 var girl,girlImg;
-var girl3,girl3Img
+var girl3,girl3Img;
+var girl2Img
 var butterfly1,butterflyGif1,butterfly1Grp;
 var butterfly2,butterflyGif2,butterfly2Grp;
 var honeyBee,honeyBeeImg,honeyBeeGrp;
@@ -9,18 +10,21 @@ var PLAY=1;
 var END=0;
 var GameState="PLAY";
 var jumpSound, backgroundSound,pointSound;
-
+var score=0;
+var gameOver,gameOverImage;
 
 function preload(){
 bgImg=loadImage("Images/Garden1.jpg");
 girlImg=loadImage("Images/Girl.png");
 girl3Img=loadImage("Images/Girl3.png");
+girl2Img=loadAnimation("Images/Girl2.png");
 butterflyGif1=loadAnimation("Images/Butterfly1.png","Images/Butterfly2.png");
 butterflyGif2=loadAnimation("Images/Butterfly3.png","Images/Butterfly4.png");
 honeyBeeImg=loadImage("Images/HoneyBee.png");
 jumpSound=loadSound("Sounds/JumpSound.wav");
 //backgroundSound=loadSound("Sounds/BackgroundSound.wav");
 pointSound=loadSound("Sounds/PointSound.wav");
+gameOverImage=loadImage("Images/GameOver.png");
 }
 
 
@@ -36,9 +40,15 @@ function setup() {
   girl=createSprite(100, 350, 50, 20);
   girl.addImage("G1",girlImg);
   girl.scale=0.8
+  //girl.debug=true;
+  girl.setCollider("rectangle",0,40,80,150);
   
  // girl3=createSprite(200,200,10,40);
   //girl3.addImage("g3",girl3Img);
+
+gameOver=createSprite(500,200,100,100);
+gameOver.addImage("GameOver",gameOverImage);
+//gameOver.scale=1.5;
 
 invisibleGround=createSprite(50,450,600,20);
 invisibleGround.visible=false;
@@ -51,8 +61,8 @@ butterfly2Grp=new Group();
 function draw() {
   background(255);  
 if(GameState==="PLAY"){
- //backgroundSound.play();
-
+// backgroundSound.play();
+gameOver.visible=false;
 if(bg.x<400){
     bg.x=bg.width/2
   }
@@ -69,10 +79,12 @@ jumpSound.play();
 if(butterfly1Grp.isTouching(girl)){
   pointSound.play();
   butterfly1Grp.destroyEach();
+  score=score+1;
 }
 if(butterfly2Grp.isTouching(girl)){
   pointSound.play();
   butterfly2Grp.destroyEach();
+  score=score+2;
 }
 
 girl.velocityY=girl.velocityY+0.8;
@@ -82,6 +94,7 @@ if(girl.isTouching(honeyBeeGrp)){
 butterfly1Grp.setVelocityXEach(0);
 butterfly2Grp.setVelocityXEach(0);
 honeyBeeGrp.setVelocityXEach(0);
+
 }  
   spawnButterflies1();
   spawnButterflies2();
@@ -91,17 +104,26 @@ honeyBeeGrp.setVelocityXEach(0);
   }
  if(GameState==="END"){
    bg.velocityX=0;
+   girl.changeAnimation("crying girl",girl2Img);
+   girl.velocityX=0;
+   girl.velocityY=0;
+   gameOver.visible=true;
+   butterfly1Grp.destroyEach();
+   butterfly2Grp.destroyEach();
+   girl.y=350;
  } 
  
 girl.collide(invisibleGround);
 
   drawSprites();
-  text("Score:",850,15);
+  textSize(20);
+  fill(0);
+  text("Score:"+score,860,20);
 }
 
 function spawnButterflies1(){
 if(World.frameCount%300===0){
-  var butterfly1=createSprite(800,200,20,20);
+  var butterfly1=createSprite(500,200,20,20);
   butterfly1.y=Math.round(random(100,200));
   butterfly1.addAnimation("B1",butterflyGif1);
   butterfly1.scale=0.2
@@ -112,7 +134,7 @@ if(World.frameCount%300===0){
 }
 function spawnButterflies2(){
   if(World.frameCount%400===0){
-    var butterfly2=createSprite(900,200,20,20);
+    var butterfly2=createSprite(700,200,20,20);
     butterfly2.y=Math.round(random(100,200));
     butterfly2.addAnimation("B2",butterflyGif2);
     butterfly2.scale=0.2;
@@ -125,6 +147,7 @@ function spawnButterflies2(){
 function spawnHoneyBees(){
   if(World.frameCount%500===0){
     var honeyBee=createSprite(950,100,20,20);
+    honeyBee.y=Math.round(random(50,100));
     honeyBee.addImage("H1",honeyBeeImg);
     honeyBee.scale=0.2;
     honeyBee.velocityX=-2;
