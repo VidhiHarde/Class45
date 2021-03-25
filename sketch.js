@@ -1,15 +1,26 @@
 var bg,bgImg;
 var girl,girlImg;
-var butterfly1,butterflyGif1;
-var butterfly2,butterflyGif2;
-var honeyBee,honeyBeeImg;
+var girl3,girl3Img
+var butterfly1,butterflyGif1,butterfly1Grp;
+var butterfly2,butterflyGif2,butterfly2Grp;
+var honeyBee,honeyBeeImg,honeyBeeGrp;
+var invisibleGround;
+var PLAY=1;
+var END=0;
+var GameState="PLAY";
+var jumpSound, backgroundSound,pointSound;
+
 
 function preload(){
 bgImg=loadImage("Images/Garden1.jpg");
 girlImg=loadImage("Images/Girl.png");
+girl3Img=loadImage("Images/Girl3.png");
 butterflyGif1=loadAnimation("Images/Butterfly1.png","Images/Butterfly2.png");
 butterflyGif2=loadAnimation("Images/Butterfly3.png","Images/Butterfly4.png");
 honeyBeeImg=loadImage("Images/HoneyBee.png");
+jumpSound=loadSound("Sounds/JumpSound.wav");
+//backgroundSound=loadSound("Sounds/BackgroundSound.wav");
+pointSound=loadSound("Sounds/PointSound.wav");
 }
 
 
@@ -26,20 +37,66 @@ function setup() {
   girl.addImage("G1",girlImg);
   girl.scale=0.8
   
-  
+ // girl3=createSprite(200,200,10,40);
+  //girl3.addImage("g3",girl3Img);
+
+invisibleGround=createSprite(50,450,600,20);
+invisibleGround.visible=false;
+
+honeyBeeGrp=new Group();
+butterfly1Grp=new Group();
+butterfly2Grp=new Group();
 }
 
 function draw() {
   background(255);  
- 
-  if(bg.x<400){
+if(GameState==="PLAY"){
+ //backgroundSound.play();
+
+if(bg.x<400){
     bg.x=bg.width/2
   }
+if(keyDown(LEFT_ARROW)){
+girl.changeAnimation("g3",girl3Img);
+  }
+  
+if(keyDown("space")&& girl.y>100){
+  girl.velocityY=-10;
+  }
+if(keyWentDown("space")){
+jumpSound.play();
+}
+if(butterfly1Grp.isTouching(girl)){
+  pointSound.play();
+  butterfly1Grp.destroyEach();
+}
+if(butterfly2Grp.isTouching(girl)){
+  pointSound.play();
+  butterfly2Grp.destroyEach();
+}
+
+girl.velocityY=girl.velocityY+0.8;
+
+if(girl.isTouching(honeyBeeGrp)){
+  GameState="END";
+butterfly1Grp.setVelocityXEach(0);
+butterfly2Grp.setVelocityXEach(0);
+honeyBeeGrp.setVelocityXEach(0);
+}  
   spawnButterflies1();
   spawnButterflies2();
   spawnHoneyBees();
+  
+  
+  }
+ if(GameState==="END"){
+   bg.velocityX=0;
+ } 
+ 
+girl.collide(invisibleGround);
 
   drawSprites();
+  text("Score:",850,15);
 }
 
 function spawnButterflies1(){
@@ -49,8 +106,9 @@ if(World.frameCount%300===0){
   butterfly1.addAnimation("B1",butterflyGif1);
   butterfly1.scale=0.2
   butterfly1.velocityX=-2;
-butterfly1.lifeTime=500;
-}
+  butterfly1.lifeTime=500;
+  butterfly1Grp.add(butterfly1);
+ }
 }
 function spawnButterflies2(){
   if(World.frameCount%400===0){
@@ -60,15 +118,17 @@ function spawnButterflies2(){
     butterfly2.scale=0.2;
     butterfly2.velocityX=-2;
     butterfly2.lifeTime=500;
+    butterfly2Grp.add(butterfly2);
   }
 }
 
 function spawnHoneyBees(){
   if(World.frameCount%500===0){
-    var honeyBee=createSprite(950,200,20,20);
+    var honeyBee=createSprite(950,100,20,20);
     honeyBee.addImage("H1",honeyBeeImg);
     honeyBee.scale=0.2;
     honeyBee.velocityX=-2;
     honeyBee.lifeTime=500;
+    honeyBeeGrp.add(honeyBee);
   }
 }
